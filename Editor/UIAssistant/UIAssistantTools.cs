@@ -3,7 +3,21 @@ using UnityEngine;
 
 public class UIAssistantTools
 {
-    private static Color[] m_colors = new Color[6] { Color.red, Color.yellow, Color.blue, Color.green, Color.black, Color.white };
+    public static Color[] m_colors = new Color[]
+    {
+        new Color(250 / 255f,44 / 255f,123 / 255f),
+        new Color(255 / 255f,56 / 255f,224 / 255f),
+        new Color(255 / 255f,162 / 255f,53 / 255f),
+        new Color(4 / 255f,197 / 255f,243 / 255f),
+        new Color(0 / 255f,102 / 255f,254 / 255f),
+        new Color(137 / 255f,50 / 255f,165 / 255f),
+        new Color(201 / 255f,4 / 255f,68 / 255f),
+        new Color(203 / 255f,155 / 255f,255 / 255f),
+        new Color(128 / 255f,128 / 255f,128 / 255f),
+        new Color(144 / 255f,237 / 255f,125 / 255f),
+        new Color(247 / 255f,163 / 255f,92 / 255f),
+        new Color(128 / 255f,133 / 255f,233 / 255f),
+    };
     private static GUIStyle[] styles = null;
     private static List<DrawRectInfo> list = new List<DrawRectInfo>();
     private static Dictionary<int, bool> maskDic = new Dictionary<int, bool>();
@@ -12,7 +26,7 @@ public class UIAssistantTools
 
     public static void InitStyles() 
     {
-        styles = new GUIStyle[6];
+        styles = new GUIStyle[m_colors.Length];
         for (int i = 0; i < styles.Length; ++i) 
         {
             styles[i] = new GUIStyle();
@@ -27,7 +41,7 @@ public class UIAssistantTools
             InitStyles();
         }
 
-        return styles[id % 6];
+        return styles[id % m_colors.Length];
     }
 
     public static void GenTreeInfo(TreeNode node)

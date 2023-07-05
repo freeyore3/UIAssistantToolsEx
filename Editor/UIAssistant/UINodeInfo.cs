@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.U2D;
 
 public class UINodeInfo 
 {
@@ -109,6 +110,32 @@ public class UINodeInfo
         }
     }
 
+    private Sprite m_sprite;
+    public Sprite Sprite
+    {
+        set
+        {
+            m_sprite = value;
+        }
+        get
+        {
+            return m_sprite;
+        }
+    }
+    
+    private SpriteAtlas m_spriteAtlas;
+    public SpriteAtlas SpriteAtlas
+    {
+        set
+        {
+            m_spriteAtlas = value;
+        }
+        get
+        {
+            return m_spriteAtlas;
+        }
+    }
+    
     private string m_name;
     public string Name
     {
@@ -122,6 +149,19 @@ public class UINodeInfo
         }
     }
 
+    private GameObject m_assetObject;
+    public GameObject assetObject
+    {
+        set
+        {
+            m_assetObject = value;
+        }
+        get
+        {
+            return m_assetObject;
+        }
+    }
+    
     private Vector3[] m_corners = new Vector3[4];
     public Vector3[] Corners 
     {
@@ -137,11 +177,12 @@ public class UINodeInfo
 
     private DrawRectInfo m_info;
 
-    public UINodeInfo(bool drawGraphic, bool isCanvas, string name) 
+    public UINodeInfo(bool drawGraphic, bool isCanvas, string name, GameObject go) 
     {
         m_isDrawGraphic = drawGraphic;
         m_isCanvas = isCanvas;
         m_name = name;
+        m_assetObject = go;
     }
 
     public void ConnectInfo(DrawRectInfo info) 

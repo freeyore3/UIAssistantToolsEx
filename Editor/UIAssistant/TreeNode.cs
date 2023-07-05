@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor;
 using System;
+using TMPro;
 
 public class TreeNode
 {
@@ -79,13 +80,13 @@ public class TreeNode
         }
     }
 
-    public TreeNode(string title, GameObject assetObject = null, int depth = 0)
+    public TreeNode(string title, GameObject assetObject = null, GetSpriteAtlasCallback getSpriteAtlasCallback = null, int depth = 0)
     {
         this.title = title;
         this.assetObject = assetObject;
         this.depth = depth;
 
-        GenInfo();
+        GenInfo(getSpriteAtlasCallback);
 
         if (title == null)
         {
@@ -100,12 +101,84 @@ public class TreeNode
             Selection.activeGameObject = assetObject;
         }
 
-        isShow = EditorGUI.Foldout(position, isShow, title, UIAssistantTools.GetStyles(nodeInfo.BatchID % UIAssistantTools.DefaultDepth));
+        float x = position.x;
+        
+        Texture icon;
+        if (nodeInfo.assetObject.GetComponent<Canvas>() != null)
+        {
+            icon = EditorGUIUtility.IconContent("Canvas Icon").image;
+        }
+        else if (nodeInfo.assetObject.GetComponent<Text>() != null)
+        {
+            icon = EditorGUIUtility.IconContent("Text Icon").image;
+        }
+        else if (nodeInfo.assetObject.GetComponent<TextMeshPro>() != null)
+        {
+            icon = EditorGUIUtility.IconContent("Text Icon").image;
+        }
+        else if (nodeInfo.assetObject.GetComponent<TextMeshProUGUI>() != null)
+        {
+            icon = EditorGUIUtility.IconContent("Text Icon").image;
+        }
+        else if (nodeInfo.assetObject.GetComponent<Image>() != null)
+        {
+            icon = EditorGUIUtility.IconContent("Image Icon").image;
+        }
+        else
+        {
+            icon = EditorGUIUtility.IconContent("GameObject Icon").image;
+        }
+        //icon = EditorGUIUtility.ObjectContent(nodeInfo.assetObject, nodeInfo.assetObject.GetType()).image;
+        GUI.DrawTexture(new Rect(x, position.y, 16, 16), icon);
+        x += 16;
+
+        GUIStyle style = UIAssistantTools.GetStyles(nodeInfo.BatchID % UIAssistantTools.DefaultDepth);
+        float labelWidth = style.CalcSize(new GUIContent(title)).x; 
+        isShow = EditorGUI.Foldout(new Rect(x, position.y, labelWidth, position.height), isShow, title, style);
+        x += labelWidth + 5;
+        
         if (subTitle != null)
         {
-            EditorGUI.LabelField(new Rect(position.x + position.width + 5, position.y, position.width, position.height), subTitle, subTitleGuiStyle);
+            labelWidth = subTitleGuiStyle.CalcSize(new GUIContent(subTitle)).x;
+            EditorGUI.LabelField(new Rect(x + 5, position.y, labelWidth, position.height), subTitle, subTitleGuiStyle);
+            x += labelWidth + 5;
         }
 
+        if (isShow && nodeInfo.Sprite != null)
+        {
+            icon = EditorGUIUtility.ObjectContent(nodeInfo.Sprite, nodeInfo.Sprite.GetType()).image;
+            GUI.DrawTexture(new Rect(x, position.y, 16, 16), icon);
+            x += 16;
+            
+            labelWidth = GUI.skin.label.CalcSize(new GUIContent(nodeInfo.Sprite.name)).x;
+            EditorGUI.LabelField(new Rect(x + 5, position.y, labelWidth, position.height), nodeInfo.Sprite.name);
+            
+            Rect rect = new Rect(x + 5, position.y, labelWidth, position.height);
+            if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition) && Event.current.button == 0)
+            {
+                Selection.activeObject = nodeInfo.Sprite;
+            }
+            
+            x += labelWidth + 5;
+        }
+        if (isShow && nodeInfo.SpriteAtlas != null)
+        {
+            icon = EditorGUIUtility.ObjectContent(nodeInfo.SpriteAtlas, nodeInfo.SpriteAtlas.GetType()).image;
+            GUI.DrawTexture(new Rect(x, position.y, 16, 16), icon);
+            x += 16;
+            
+            labelWidth = GUI.skin.label.CalcSize(new GUIContent(nodeInfo.SpriteAtlas.name)).x;
+            EditorGUI.LabelField(new Rect(x + 5, position.y, labelWidth, position.height), nodeInfo.SpriteAtlas.name);
+            
+            Rect rect = new Rect(x + 5, position.y, labelWidth, position.height);
+            if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition) && Event.current.button == 0)
+            {
+                Selection.activeObject = nodeInfo.SpriteAtlas;
+            }
+            
+            x += labelWidth + 5;
+        }
+        
         if (isShow)
         {
             float childY = position.y + position.height;
@@ -123,16 +196,16 @@ public class TreeNode
         CalcRecursiveSize();
     }
 
-    public TreeNode Clone()
+    public TreeNode Clone(GetSpriteAtlasCallback getSpriteAtlasCallback = null)
     {
-        TreeNode cloneNode = new TreeNode(title, assetObject, depth);
+        TreeNode cloneNode = new TreeNode(title, assetObject, getSpriteAtlasCallback, depth);
         cloneNode.SetSubTitle(subTitle, subTitleGuiStyle != null ? subTitleGuiStyle.normal.textColor : Color.green);
         cloneNode.SetParent(parent);
         for (int i = 0; i < children.Count; i++)
         {
             if (children[i] != null)
             {
-                cloneNode.AddChild(children[i].Clone());
+                cloneNode.AddChild(children[i].Clone(getSpriteAtlasCallback));
             }
         }
 
@@ -468,18 +541,28 @@ public class TreeNode
         return parent.IsShowRecursively();
     }
 
-    private void GenInfo() 
+    private void GenInfo(GetSpriteAtlasCallback getSpriteAtlasCallback = null) 
     {
         rectTransform = assetObject.GetComponent<RectTransform>();
         MaskableGraphic ui = assetObject.GetComponent<MaskableGraphic>();
-        nodeInfo = new UINodeInfo(ui != null, assetObject.GetComponent<Canvas>() != null, assetObject.name);
+        nodeInfo = new UINodeInfo(ui != null, assetObject.GetComponent<Canvas>() != null, assetObject.name, assetObject);
         nodeInfo.Depth = depth;
         nodeInfo.IsInMask = assetObject.GetComponent<Mask>() != null ? 0 : -1;
         nodeInfo.IsInMask2D = assetObject.GetComponent<RectMask2D>() != null ? nodeInfo.GetHashCode() : -1;
         if (ui != null) 
         {
             nodeInfo.MaterialInstanceID = ui.material.GetInstanceID();
-            nodeInfo.TextureID = ui.mainTexture.GetInstanceID();
+            if (ui.mainTexture != null)
+                nodeInfo.TextureID = ui.mainTexture.GetInstanceID();
+        }
+        Image img = assetObject.GetComponent<Image>();
+        if (img != null && img.sprite != null) 
+        {
+            nodeInfo.Sprite = img.sprite;
+            if (img.sprite.packed)
+            {
+                nodeInfo.SpriteAtlas = getSpriteAtlasCallback?.Invoke(img.sprite);
+            }
         }
         Matrix4x4 localToWorldMatrix = assetObject.transform.localToWorldMatrix;
         Text t = assetObject.GetComponent<Text>();
@@ -559,7 +642,8 @@ public class TreeNode
         }
         else 
         {
-            rectTransform.GetWorldCorners(nodeInfo.Corners);
+            if (rectTransform != null)
+                rectTransform.GetWorldCorners(nodeInfo.Corners);
         }
     }
 }
