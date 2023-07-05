@@ -10,13 +10,8 @@ using System.Net.Mail;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
-using Sirenix.Utilities;
 using UnityEngine.U2D;
-using Sirenix.Serialization;
 #if UNITY_EDITOR
-using Sirenix.OdinInspector.Editor;
-using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEditor.U2D;
 #endif

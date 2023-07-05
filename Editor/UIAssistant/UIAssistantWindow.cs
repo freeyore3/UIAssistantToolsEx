@@ -1,4 +1,6 @@
-﻿using Coffee.UIExtensions;
+﻿#if USE_UIPARTICLE
+using Coffee.UIExtensions;
+#endif
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.U2D;
@@ -195,11 +197,12 @@ public class UIAssistantWindow : EditorWindow
                         ++depthIdx;
                         depth = depthIdx * defaultDepth;
                     }
-
+#if USE_UIPARTICLE
                     if (child.GetComponent<UIParticle>() != null)
                     {
                         continue;
                     }
+#endif
                     TreeNode childNode = new TreeNode(child.name, child.gameObject, GetSpriteAtlas, depth);
                     GenChildNodes(childNode, child);
                     node.AddChild(childNode);
